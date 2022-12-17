@@ -1,16 +1,18 @@
+/* eslint-disable linebreak-style */
+// /* eslint-disable linebreak-style */
 const router = require('express').Router();
 const {
   createCard, getCards, deleteCardById, likeCard, dislikeCard,
 } = require('../controllers/cards');
 
-// router.post('/', createCard);
+router.post('/cards', createCard);
 
-// router.get('/', getCards);
+router.get('/cards', getCards);
 
-// router.delete('/:cardId', deleteCardById);
+router.delete('/cards/:cardId', deleteCardById);
 
-// router.put('/:cardId/likes', likeCard);
+router.put('/cards/:cardId/likes', likeCard);
 
-// router.delete('/:cardId/likes', dislikeCard);
+router.delete('/cards/:cardId/likes', dislikeCard);
 
 module.exports = router;
