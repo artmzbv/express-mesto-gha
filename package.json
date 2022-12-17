@@ -1,24 +1,26 @@
 {
-  "name": "pr13",
+  "name": "express-mesto-gha",
   "version": "1.0.0",
   "description": "",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon app.js",
-    "lint": "npx eslint ."
+    "lint": "npx eslint .",
+    "start": "node app.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Artem Zubov",
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.20.1",
-    "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-plugin-import": "^2.26.0",
     "express": "^4.18.2",
-    "mongoose": "^6.7.4"
+    "mongoose": "^6.8.0"
   },
   "devDependencies": {
+    "eslint": "^8.18.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.26.0",
     "nodemon": "^2.0.20"
   }
 }
