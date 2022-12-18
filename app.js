@@ -8,6 +8,8 @@ mongoose.set('strictQuery', false);
 
 const app = express();
 const { PORT = 3000 } = process.env;
+const constants = require('./constants/constants');
+
 mongoose.connect('mongodb://127.0.0.1:27017/mestodb');
 
 app.use(bodyParser.json());
@@ -24,7 +26,7 @@ app.use((req, res, next) => {
 app.use('/', userRouter);
 app.use('/', cardRouter);
 app.use((req, res) => {
-  res.status(404).send({ message: 'Страница не найдена' });
+  res.status(constants.numbers.notFound).send({ message: constants.messages.pageError });
 });
 
 app.listen(PORT, () => {
