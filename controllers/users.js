@@ -1,7 +1,5 @@
 const User = require('../models/user');
-const ValidationError = require('../constants/ValidationError');
-const NotFoundError = require('../constants/NotFoundError');
-const ServerError = require('../constants/ServerError');
+const constants = require('../constants/constants');
 
 module.exports.postUser = (req, res) => {
   const { name, about, avatar } = req.body;
@@ -9,10 +7,11 @@ module.exports.postUser = (req, res) => {
   User.create({ name, about, avatar })
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(new ValidationError('Переданы некорректные данные карточки'));
+      if (err.name === constants.names.validationError) {
+        res.status(constants.numbers.validationError)
+          .send({ message: constants.messages.validationError });
       } else {
-        next(new ServerError('Что-то не так с сервером'));
+        res.status(constants.numbers.serverError).send({ message: constants.messages.serverError });
       }
     });
 };
@@ -21,16 +20,17 @@ module.exports.getUserById = (req, res) => {
   User.findById(req.params.id)
     .then((user) => {
       if (!user) {
-        next(new NotFoundError('Запрашиваемый пользователь не найден'));
+        res.status(constants.numbers.notFound).send({ message: constants.messages.searchError });
       } else {
         res.send({ data: user });
       }
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
-        next(new ValidationError('Отправлены неправильные данные'));
+      if (err.name === constants.names.castError) {
+        res.status(constants.numbers.validationError)
+          .send({ message: constants.messages.validationError });
       } else {
-        next(new ServerError('Что-то не так с сервером'));
+        res.status(constants.numbers.serverError).send({ message: constants.messages.serverError });
       }
     });
 };
@@ -38,7 +38,8 @@ module.exports.getUserById = (req, res) => {
 module.exports.getUsers = (req, res) => {
   User.find({})
     .then((user) => res.send({ data: user }))
-    .catch(() => next(new ServerError('Что-то не так с сервером')));
+    .catch(() => res.status(constants.numbers.serverError)
+      .send({ message: constants.messages.serverError }));
 };
 
 module.exports.updateProfile = (req, res) => {
@@ -47,16 +48,17 @@ module.exports.updateProfile = (req, res) => {
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .then((user) => {
       if (!user) {
-        next(new NotFoundError('Запрашиваемый пользователь не найден'));
+        res.status(constants.numbers.notFound).send({ message: constants.messages.searchError });
       } else {
         res.send({ data: user });
       }
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(new ValidationError('Переданы некорректные данные карточки'));
+      if (err.name === constants.names.validationError) {
+        res.status(constants.numbers.validationError)
+          .send({ message: constants.messages.dislikesError });
       } else {
-        next(new ServerError('Что-то не так с сервером'));
+        res.status(constants.numbers.serverError).send({ message: constants.messages.serverError });
       }
     });
 };
@@ -67,15 +69,15 @@ module.exports.updateAvatar = (req, res) => {
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true })
     .then((user) => {
       if (!user) {
-        next(new NotFoundError('Запрашиваемый пользователь не найден'));
+        res.status(constants.numbers.notFound).send({ message: constants.messages.searchError });
       } else { res.send({ data: user }); }
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400);
-        next(new ValidationError('Переданы некорректные данные карточки'));
+      if (err.name === constants.names.validationError) {
+        res.status(constants.numbers.validationError)
+          .send({ message: constants.messages.avatarError });
       } else {
-        next(new ServerError('Что-то не так с сервером'));
+        res.status(constants.numbers.serverError).send({ message: constants.messages.serverError });
       }
     });
 };

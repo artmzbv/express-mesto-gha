@@ -1,7 +1,5 @@
 const Card = require('../models/card');
-const ValidationError = require('../constants/ValidationError');
-const NotFoundError = require('../constants/NotFoundError');
-const ServerError = require('../constants/ServerError');
+const constants = require('../constants/constants');
 
 const userObjects = ['owner', 'likes'];
 
@@ -11,10 +9,11 @@ module.exports.createCard = (req, res) => {
   Card.create({ name, link, owner: req.user._id })
     .then((card) => res.send({ data: card }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(new ValidationError('Переданы некорректные данные карточки'));
+      if (err.name === constants.names.validationError) {
+        res.status(constants.numbers.validationError)
+          .send({ message: constants.messages.validationError });
       } else {
-        next(new ServerError('Что-то не так с сервером'));
+        res.status(constants.numbers.serverError).send({ message: constants.messages.serverError });
       }
     });
 };
@@ -23,29 +22,30 @@ module.exports.deleteCardById = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
     .then((card) => {
       if (!card) {
-        next(new NotFoundError('Карточка с указанным _id не найдена'));
+        res.status(constants.numbers.notFound).send({ message: constants.messages.searchError });
       } else {
         res.send({ data: card });
       }
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
-        next(new ValidationError('Переданы некорректные данные карточки'));
+      if (err.name === constants.names.castError) {
+        res.status(constants.numbers.validationError)
+          .send({ message: constants.messages.validationError });
       } else {
-        next(new ServerError('Что-то не так с сервером'));
+        res.status(constants.numbers.serverError).send({ message: constants.messages.serverError });
       }
     });
 };
-
 module.exports.getCards = (req, res) => {
   Card.find({})
     .populate(userObjects)
     .then((cards) => res.send({ data: cards }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(new ValidationError('Переданы некорректные данные карточки'));
+      if (err.name === constants.names.validationError) {
+        res.status(constants.numbers.validationError)
+          .send({ message: constants.messages.validationError });
       } else {
-        next(new ServerError('Что-то не так с сервером'));
+        res.status(constants.numbers.serverError).send({ message: constants.messages.serverError });
       }
     });
 };
@@ -59,16 +59,17 @@ module.exports.likeCard = (req, res) => {
     .populate(userObjects)
     .then((card) => {
       if (!card) {
-        next(new NotFoundError('Передан несуществующий id карточки.'));
+        res.status(constants.numbers.notFound).send({ message: constants.messages.searchError });
       } else {
         res.send({ data: card });
       }
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
-        next(new ValidationError('Переданы некорректные данные для постановки лайка.'));
+      if (err.name === constants.names.castError) {
+        res.status(constants.numbers.validationError)
+          .send({ message: constants.messages.likesError });
       } else {
-        next(new ServerError('Что-то не так с сервером'));
+        res.status(constants.numbers.serverError).send({ message: constants.messages.serverError });
       }
     });
 };
@@ -82,16 +83,17 @@ module.exports.dislikeCard = (req, res) => {
     .populate(userObjects)
     .then((card) => {
       if (!card) {
-        next(new NotFoundError('Передан несуществующий id карточки.'));
+        res.status(constants.numbers.notFound).send({ message: constants.messages.searchError });
       } else {
         res.send({ data: card });
       }
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
-        next(new ValidationError('Переданы некорректные данные для снятия лайка.'));
+      if (err.name === constants.names.castError) {
+        res.status(constants.numbers.validationError)
+          .send({ message: constants.messages.dislikesError });
       } else {
-        next(new ServerError('Что-то не так с сервером'));
+        res.status(constants.numbers.serverError).send({ message: constants.messages.serverError });
       }
     });
 };
