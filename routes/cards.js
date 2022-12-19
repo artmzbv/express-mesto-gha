@@ -10,8 +10,8 @@ router.get('/cards', getCards);
 
 router.delete('/cards/:id', validatedCardId, deleteCardById);
 
-router.put('/cards/:id/likes', likeCard);
+router.put('/cards/:id/likes', validatedCardId, likeCard);
 
-router.delete('/cards/:id/likes', dislikeCard);
+router.delete('/cards/:id/likes', validatedCardId, dislikeCard);
 
 module.exports = router;
