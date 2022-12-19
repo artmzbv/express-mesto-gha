@@ -7,7 +7,7 @@ const cardRouter = require('./routes/cards');
 const { postUser, login } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 const NotFoundError = require('./utils/errors/NotFoundError');
-const validatedUser = require('./utils/validation');
+const { validatedUser } = require('./utils/validation');
 const errorHandler = require('./utils/errorHandler');
 
 mongoose.set('strictQuery', false);
@@ -28,19 +28,18 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 //   next();
 // });
+app.post('/signin', validatedUser, login);
+app.post('/signup', validatedUser, postUser);
 
 app.use('/', auth, userRouter);
 app.use('/', auth, cardRouter);
 app.use(errors());
 app.use(errorHandler);
 
-app.use((req, res, next) => {
+app.use(('/', auth, (req, res, next) => {
   next(new NotFoundError(constants.messages.pageError));
-});
+}));
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
 });
-
-app.post('/signin', validatedUser, login);
-app.post('/signup', validatedUser, postUser);
