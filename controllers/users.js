@@ -1,83 +1,136 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const constants = require('../constants/constants');
+const constants = require('../utils/constants');
+const NotFoundError = require('../utils/errors/NotFoundError');
+const ValidationError = require('../utils/errors/ValidationError');
+const ConflictError = require('../utils/errors/ConflictError');
+const UnauthorizedError = require('../utils/errors/UnauthorizedError');
 
-module.exports.postUser = (req, res) => {
-  const { name, about, avatar } = req.body;
+const { NODE_ENV, JWT_SECRET } = process.env;
 
-  User.create({ name, about, avatar })
-    .then((user) => res.send({ data: user }))
+module.exports.login = (req, res, next) => {
+  const { email, password } = req.body;
+  User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'dev-key', { expiresIn: '7d' });
+      res.send({ token });
+    })
+    .catch(() => next(new UnauthorizedError(constants.messages.unauthorizedError)));
+};
+
+module.exports.postUser = (req, res, next) => {
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
+  return bcrypt
+    .hash(password, 10)
+    .then((hash) => User.create({
+      name,
+      about,
+      avatar,
+      email,
+      password: hash,
+    }))
+    .then((user) => res.send({
+      name: user.name,
+      about: user.about,
+      avatar: user.avatar,
+      email: user.email,
+    }))
     .catch((err) => {
-      if (err.name === constants.names.validationError) {
-        res.status(constants.numbers.validationError)
-          .send({ message: constants.messages.validationError });
+      if (err.code === 11000) {
+        next(new ConflictError(constants.messages.conflictError));
+      } else if (err.name === constants.names.validationError) {
+        next(new ValidationError(constants.messages.validationError));
       } else {
-        res.status(constants.numbers.serverError).send({ message: constants.messages.serverError });
+        next(err);
       }
     });
 };
 
-module.exports.getUserById = (req, res) => {
+module.exports.getUserById = (req, res, next) => {
   User.findById(req.params.id)
     .then((user) => {
       if (!user) {
-        res.status(constants.numbers.notFound).send({ message: constants.messages.searchError });
+        next(new NotFoundError(constants.messages.searchError));
       } else {
-        res.send({ data: user });
+        res.send({
+          data: {
+            name: user.name,
+            about: user.about,
+            avatar: user.avatar,
+            email: user.email,
+            _id: user._id,
+          },
+        });
       }
     })
     .catch((err) => {
       if (err.name === constants.names.castError) {
-        res.status(constants.numbers.validationError)
-          .send({ message: constants.messages.validationError });
+        next(new ValidationError(constants.messages.validationError));
       } else {
-        res.status(constants.numbers.serverError).send({ message: constants.messages.serverError });
+        next(err);
       }
     });
 };
 
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((user) => res.send({ data: user }))
-    .catch(() => res.status(constants.numbers.serverError)
-      .send({ message: constants.messages.serverError }));
+    .catch(next);
 };
 
-module.exports.updateProfile = (req, res) => {
-  const { name, about } = req.body;
-
-  User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
+module.exports.getProfile = (req, res, next) => {
+  User.findById(req.user._id)
     .then((user) => {
       if (!user) {
-        res.status(constants.numbers.notFound).send({ message: constants.messages.searchError });
+        next(new NotFoundError(constants.messages.searchError));
+      } else {
+        res.send({
+          data: user,
+        });
+      }
+    })
+    .catch(next);
+};
+
+module.exports.updateProfile = (req, res, next) => {
+  const { name, about } = req.body;
+
+  User.findByIdAndUpdate(req.user._id, { name, about })
+    .then((user) => {
+      if (!user) {
+        next(new NotFoundError(constants.messages.searchError));
       } else {
         res.send({ data: user });
       }
     })
     .catch((err) => {
       if (err.name === constants.names.validationError) {
-        res.status(constants.numbers.validationError)
-          .send({ message: constants.messages.dislikesError });
+        next(new ValidationError(constants.messages.dislikesError));
       } else {
-        res.status(constants.numbers.serverError).send({ message: constants.messages.serverError });
+        next(err);
       }
     });
 };
 
-module.exports.updateAvatar = (req, res) => {
+module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
 
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true })
     .then((user) => {
       if (!user) {
-        res.status(constants.numbers.notFound).send({ message: constants.messages.searchError });
-      } else { res.send({ data: user }); }
+        next(new NotFoundError(constants.messages.searchError));
+      } else {
+        res.send({ data: user });
+      }
     })
     .catch((err) => {
       if (err.name === constants.names.validationError) {
-        res.status(constants.numbers.validationError)
-          .send({ message: constants.messages.avatarError });
+        next(new ValidationError(constants.messages.avatarError));
       } else {
-        res.status(constants.numbers.serverError).send({ message: constants.messages.serverError });
+        next(err);
       }
     });
 };
