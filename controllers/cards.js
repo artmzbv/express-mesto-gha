@@ -19,14 +19,14 @@ module.exports.createCard = (req, res, next) => {
 };
 
 module.exports.deleteCardById = (req, res, next) => {
-  Card.findById(req.params.cardId)
+  Card.findById(req.params.id)
     .then((card) => {
       if (!card) {
         next(new NotFoundError(constants.messages.searchError));
       } else if (req.user._id !== card.owner.toString()) {
         next(new ForbiddenError(constants.messages.forbiddenError));
       } else {
-        Card.findByIdAndRemove(req.params.cardId).then((deletedcard) => {
+        Card.findByIdAndRemove(req.params.id).then((deletedcard) => {
           res.send({ data: deletedcard })
             .catch(next);
         });
@@ -49,7 +49,7 @@ module.exports.getCards = (req, res, next) => {
 
 module.exports.likeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
-    req.params.cardId,
+    req.params.id,
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
@@ -71,7 +71,7 @@ module.exports.likeCard = (req, res, next) => {
 
 module.exports.dislikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
-    req.params.cardId,
+    req.params.id,
     { $pull: { likes: req.user._id } },
     { new: true },
   )
