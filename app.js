@@ -21,24 +21,18 @@ mongoose.connect('mongodb://127.0.0.1:27017/mestodb');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// app.use((req, res, next) => {
-//   req.user = {
-//     _id: '63965591a3e2e5473bdc580e',
-//   };
-
-//   next();
-// });
 app.post('/signin', validatedUser, login);
 app.post('/signup', validatedUser, postUser);
 
 app.use('/', auth, userRouter);
 app.use('/', auth, cardRouter);
-app.use(errors());
-app.use(errorHandler);
 
 app.use(('/', auth, (req, res, next) => {
   next(new NotFoundError(constants.messages.pageError));
 }));
+
+app.use(errors());
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
