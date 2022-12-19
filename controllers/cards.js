@@ -27,7 +27,8 @@ module.exports.deleteCardById = (req, res, next) => {
         next(new ForbiddenError(constants.messages.forbiddenError));
       } else {
         Card.findByIdAndRemove(req.params.cardId).then((deletedcard) => {
-          res.send({ data: deletedcard });
+          res.send({ data: deletedcard })
+            .catch(next);
         });
       }
     })
