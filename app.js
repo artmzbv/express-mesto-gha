@@ -1,12 +1,14 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const { errors } = require('celebrate');
 const userRouter = require('./routes/users');
 const cardRouter = require('./routes/cards');
 const { postUser, login } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 const NotFoundError = require('./utils/errors/NotFoundError');
 const validatedUser = require('./utils/validation');
+const errorHandler = require('./utils/errorHandler');
 
 mongoose.set('strictQuery', false);
 
@@ -29,6 +31,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use('/', auth, userRouter);
 app.use('/', auth, cardRouter);
+app.use(errors());
+app.use(errorHandler);
 
 app.use((req, res, next) => {
   next(new NotFoundError(constants.messages.pageError));
