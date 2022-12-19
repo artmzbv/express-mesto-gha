@@ -6,7 +6,7 @@ const { validatedUserId, validatedProfile, validatedAvatar } = require('../utils
 
 router.get('/users', getUsers);
 
-router.get('users/me', getProfile);
+router.get('/users/me', getProfile);
 
 router.get('/users/:id', validatedUserId, getUserById);
 
