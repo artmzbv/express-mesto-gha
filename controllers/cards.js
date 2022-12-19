@@ -4,8 +4,6 @@ const NotFoundError = require('../utils/errors/NotFoundError');
 const ValidationError = require('../utils/errors/ValidationError');
 const ForbiddenError = require('../utils/errors/ForbiddenError');
 
-const userObjects = ['owner', 'likes'];
-
 module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
 
@@ -21,7 +19,7 @@ module.exports.createCard = (req, res, next) => {
 };
 
 module.exports.deleteCardById = (req, res, next) => {
-  Card.findByIdAndRemove(req.params.cardId)
+  Card.findById(req.params.cardId)
     .then((card) => {
       if (!card) {
         next(new NotFoundError(constants.messages.searchError));
@@ -44,7 +42,6 @@ module.exports.deleteCardById = (req, res, next) => {
 
 module.exports.getCards = (req, res, next) => {
   Card.find({})
-    .populate(userObjects)
     .then((cards) => res.send({ data: cards }))
     .catch((err) => next(err));
 };
@@ -55,7 +52,6 @@ module.exports.likeCard = (req, res, next) => {
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
-    .populate(userObjects)
     .then((card) => {
       if (!card) {
         next(new NotFoundError(constants.messages.searchError));
@@ -78,7 +74,6 @@ module.exports.dislikeCard = (req, res, next) => {
     { $pull: { likes: req.user._id } },
     { new: true },
   )
-    .populate(userObjects)
     .then((card) => {
       if (!card) {
         next(new NotFoundError(constants.messages.searchError));
